@@ -88,10 +88,14 @@ void StreamReassembler::push_substring(const string &data, const size_t index, c
             break;
         }
     }
-    if (eof)
+    if (eof) {
+        // 标记eof，代表是结束数据段
         _eof_idx = index + data.size();
-    if (_eof_idx <= _next_assembled_idx)
+    }
+    if (_eof_idx <= _next_assembled_idx) {
+        // 结束数据段整流完毕
         _output.end_input();
+    }
 }
 
 size_t StreamReassembler::unassembled_bytes() const { return _unassembled_bytes_num; }
