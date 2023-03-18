@@ -28,7 +28,7 @@ void TCPSender::fill_window() {
     size_t win_size = _last_win_size == 0 ? 1 : _last_win_size;
     while (win_size > _outgoing_bytes) {
         TCPSegment seg;
-        if (not _set_syn_flag) {
+        if (!_set_syn_flag) {
             seg.header().syn = true;
             _set_syn_flag = true;
         }
@@ -63,7 +63,7 @@ void TCPSender::ack_received(const WrappingInt32 ackno, const uint16_t window_si
     size_t abseq = unwrap(ackno, _isn, _next_seqno);
     if (abseq > _next_seqno)
         return;
-    while (not _outgoing_queue.empty()) {
+    while (!_outgoing_queue.empty()) {
         auto pair = _outgoing_queue.front();
         TCPSegment &seg = pair.second;
         size_t seq = pair.first;

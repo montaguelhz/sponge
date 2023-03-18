@@ -26,42 +26,49 @@ StreamReassembler::StreamReassembler(const size_t capacity)
 void StreamReassembler::push_substring(const string &data, const size_t index, const bool eof) {
     size_t new_idx, new_end;
     new_idx = index;
-    new_end = data.size() + new_idx;
+    new_end = new_idx + data.size();
     auto iter = _unassemble_strs.lower_bound(index);
+    // lower_bound: new_id<=next_idx
     while (iter != _unassemble_strs.end()) {
         size_t next_idx = iter->first;
         size_t next_end = next_idx + iter->second.size();
-        if (new_end >= next_end && new_idx <= next_idx) {
+        if (new_end >= next_end) {
+            // 新数据完全覆盖了这一数据段
             _unassembled_bytes_num -= iter->second.size();
             iter = _unassemble_strs.erase(iter);
             continue;
-        } else if (new_end > next_idx && new_idx <= next_idx) {
+        } else if (new_end > next_idx) {
+            // 新数据的后半段被这一数据段覆盖，将其截去
             new_end = next_idx;
         }
+        // case: new_end<=next_idx
         break;
-        // if (new_end > next_idx) {
-        //     new_end = next_idx;
-        // }
     }
+    // case: new_idx>last_idx
     if (iter != _unassemble_strs.begin()) {
         iter--;
         size_t last_end = iter->first + iter->second.size();
         if (new_idx < last_end) {
+            // 新数据的前半段被这一数据段覆盖，将其截去
             new_idx = last_end;
         }
     }
+    // 新数据的前半段已经重组完成，将其截去
     if (_next_assembled_idx > new_idx) {
         new_idx = _next_assembled_idx;
     }
     std::string new_str;
     if (new_idx >= _next_assembled_idx + _capacity - _output.buffer_size()) {
+        // 超出窗口
         return;
     }
     if (new_idx < new_end) {
+        // 防止之前截没了
         new_str = data.substr(new_idx - index, new_end - new_idx);
         _unassemble_strs.insert(make_pair(new_idx, new_str));
         _unassembled_bytes_num += new_end - new_idx;
     }
+    // 从头开始将连续部分输出
     for (iter = _unassemble_strs.begin(); iter != _unassemble_strs.end();) {
         if (iter->first == _next_assembled_idx) {
             std::string str = iter->second;

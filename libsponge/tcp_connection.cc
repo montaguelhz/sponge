@@ -21,7 +21,7 @@ size_t TCPConnection::unassembled_bytes() const { return _receiver.unassembled_b
 size_t TCPConnection::time_since_last_segment_received() const { return _time_since_last_segment_received_ms; }
 
 void TCPConnection::segment_received(const TCPSegment &seg) {
-    if (not _is_active) {
+    if (!_is_active) {
         return;
     }
     _time_since_last_segment_received_ms = 0;
@@ -43,7 +43,7 @@ void TCPConnection::segment_received(const TCPSegment &seg) {
         _linger_after_streams_finish = false;
     }
     if (TCPState::state_summary(_receiver) == TCPReceiverStateSummary::FIN_RECV &&
-        TCPState::state_summary(_sender) == TCPSenderStateSummary::FIN_ACKED && not _linger_after_streams_finish) {
+        TCPState::state_summary(_sender) == TCPSenderStateSummary::FIN_ACKED && !_linger_after_streams_finish) {
         _is_active = false;
         return;
     }
@@ -66,7 +66,7 @@ void TCPConnection::_set_rst_state(bool send_rst) {
 }
 
 void TCPConnection::_trans_segments_to_out_with_ack_and_win() {
-    while (not _sender.segments_out().empty()) {
+    while (!_sender.segments_out().empty()) {
         TCPSegment seg = _sender.segments_out().front();
         _sender.segments_out().pop();
         if (_receiver.ackno().has_value()) {
